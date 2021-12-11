@@ -8,46 +8,25 @@ multer = require('multer');
 path = require('path');
 crypto = require('crypto');
 
-var floor = 0;
+var floor = "0";
 var success="false";
-
-//파이어베이스
-var FCM = require('fcm-node'); 
-var serverKey = 'AAAATKht2Mg:APA91bEVYVJ3SugQZINCOk8hFVOQuW3Cofm37z8Unwjb1Sa7bH7diZA9q-58KTV5cWL-rCIz6aOsSGzbhQ4xC28v82RMnUokVS-C6jH9ddTU5PLpN_rF21meazk_Azy4aNTVvOgLCn-4'; //서버키 
-var fcm = new FCM(serverKey);
-
-var message = { //this may vary according to the message type (single recipient, multicast, topic, et cetera) 
-    to: 'euGXDgeWQr692pptG_J8FY:APA91bGZ8WV2T7rjbQzuAwSwZBDtBn9rSjA4vL5JM1Rvm2p1przM6aYqnxCVQITlyT4di96QC23TbqNIrpkcvHxAiBsxSnhl1fZtZy-0QwlItrVIZIgY53KMt9aYAlukOA8eyhId0FEm', //앱에서 복사한 토큰 
-    notification: { 
-        title: '제목', 
-        body: '내용' 
-    }, 
-    data: { //you can send only notification or only data(or include both) 
-        my_key: 'my value', 
-        my_another_key: 'my another value' 
-    } 
-};
-
-fcm.send(message, function(err, response){ 
-    if (err) { 
-        console.log("Something has gone wrong!"); 
-    } 
-    else { 
-        console.log("Successfully sent with response: ", response); 
-    } 
-});
+var el_Call = 0;
+var openresponse = false;
+var CallHost;
 
 
 /////////////////////////////pushAlarm///////////////// 
 const admin = require("firebase-admin"); 
 let serviceAccount = require("./firebase-admin.json"); 
+const { Console } = require('console');
+const internal = require('stream');
+const { addAbortSignal } = require('stream');
 admin.initializeApp({ 
     credential: admin.credential.cert(serviceAccount), 
 }); 
 //////////////////////////////pushAlarm//////////////////
 
 
-     
 
 
 
@@ -69,8 +48,9 @@ exports.join = (req, res) => { //회원가입 요청시
 
     //req.body는 APP에서 POST로 넘어온 값을 가지고 있고 sql명령문으로 디비에 insert문을 보냄
     connection.query("INSERT INTO `db_muyahome`.`home` (`PK_Home_id`,`Home_pw`,`Home_phonenum`,`Home_name`,`FK_Ho_code`) VALUES ('"
-    +req.body.userId+"','"+req.body.userPw+"','"+req.body.userPhone+"','"+req.body.userName+"','"+req.body.hostcode+"');", function(err, results,flied) {
-
+    +req.body.userId+"','"+req.body.userPw+"','"+req.body.userPhone+"','"+req.body.userName+"','"+req.body.hostcode+"');", 
+    function(err, results,flied) {
+        console.log(results);
         if(results!=null){
             console.log("회원가입성공.")
             resultCode = 200;
@@ -87,46 +67,88 @@ exports.join = (req, res) => { //회원가입 요청시
             'message': message
         });
     });
-
 };
 
+exports.fam = (req, res) => {// 가족인원수
+    console.log('가족구성원수 체크');
+    console.log(req.body.hostcode);
+    let res1 = res;
 
+    connection.query("SELECT * FROM home Where FK_Ho_code = '" + req.body.hostcode + "';",
+        function(err, results,  filed) {
+            var resultCode = 404;
+            var message = '에러가 발생했습니다';
+
+            if(results[0] != null){
+                console.log("인원수 성공")
+                console.log(results.length)
+                resultCode = 200;
+                message = "인원수 불러오기 성공"                
+            }
+            else{
+                console.log("인원수 실패")
+                resultCode = 204;
+                message = "인원수 불러오기 실패"
+            }
+            res1.json({
+                'code' : resultCode,
+                'message' : message,
+                'fam' : results.length
+            });
+        });
+};
 
 
 exports.login = (req, res) => { //로그인 요청 시
     console.log('로그인');
     let res1 = res;
-
+    
     USERID = req.body.userId; //로그인을 할때 보냄 id값이 저장
     //디비에 SELECT문을 보냄
     console.log(req.body.userId, req.body.userPw);
-    connection.query("SELECT PK_Home_id, Home_pw F" +
+    connection.query("SELECT PK_Home_id, Home_pw,FK_Ho_code F" +
         "ROM  db_muyahome.home where PK_Home_id='" + req.body.userId + "' AND Home_pw= '" + req.body.userPw + "';",
-        function(err, results, filed) {
+        function(Err,results, filed) {
             var resultCode = 404;
             var message = '에러가 발생했습니다';
-
-
+            var hostcode;
             if (results[0] != null) { //로그인을 할려고 한 데이터가 존재하면 검색한 결과가  NULL이 아니기 때문에 로그인 가능
                 console.log("로그인 성공")
                 resultCode = 200;
                 message = "로그인성공"
-
+                hostcode = results[0].FK_Ho_code;
+                connection.query("SELECT PK_Ho_num FROM db_muyahome.ho WHERE PK_HO_Code=?;",hostcode,
+                function(error,result,flieds){
+                    console.log(hostcode);
+                    console.log(result[0].PK_Ho_num);
+                    res1.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                        'code': resultCode,
+                        'message': message,
+                        'userid': USERID,
+                        'hostcode': hostcode,
+                        'ho_num':result[0].PK_Ho_num,
+                    });
+                });
             } else {
                 { //로그인을 할려고 한 데이터가 존재하면 존재하지않으면  NULL이기 때문에 로그인 불가능가능
                     console.log("로그인 실패")
                     resultCode = 204;
                     message = "아이디와 비밀번호가 일치하지 않습니다."
-                }
 
+                }
+                res1.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                    'code': resultCode,
+                    'message': message,
+                    'userid': USERID,
+                    'hostcode':hostcode,
+                });
 
             }
-            res1.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
-                'code': resultCode,
-                'message': message,
-                'userid' : USERID
-            });
+
+
+            
         });
+
 
 
 };
@@ -183,10 +205,11 @@ exports.codecheck = (req, res) => { //코드 중복요청시
             var resultCode = 404;
             var message = '에러가 발생했습니다';
             
-            if (results[0] != null) { 
+            if (results != null) { 
                 console.log("유효한코드")
                 resultCode = 200;
                 message = "유효한 코드입니다."
+                console.log(results[0])
 
             } else { 
 
@@ -196,16 +219,15 @@ exports.codecheck = (req, res) => { //코드 중복요청시
             }
             res1.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
                 'code': resultCode,
-                'message': message
+                'message': message,
+                'ho' : results[0].PK_Ho_num
             });
         });
-    
-
-
 };
 
-exports.callelevator12 = (req,res) => { //아이디 중복요청시
-
+exports.callelevator12 = (req,res) => {
+    var el_beforefloor;
+    var call = el_Call;
     if(success=="false")
     {
         res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
@@ -213,59 +235,114 @@ exports.callelevator12 = (req,res) => { //아이디 중복요청시
         });
     }
     else if(success=="true"){
-        console.log("엘리베이터 호출")
-        if(floor==101 || floor==102)
+        console.log("엘리베이터 호출");
+        if(floor.substring(0,1)=="1")
         {
+
             connection.query("SELECT * FROM  elevator where FK_Line_num=12;",
             function(err, results, filed) {
-            console.log(results[0].Elevator_floor)
-            res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
-                'message': "연결됨",
-                'el_before':results[0].Elevator_floor,
-                'el_after':1
-                });
+                el_beforefloor = results[0].Elevator_floor;
+                res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                    'message': "연결됨",
+                    'el_before':el_beforefloor,
+                    'el_after':1,
+                    'el_Call': call
+                    });
+
             });
+
             connection.query("UPDATE elevator SET Elevator_floor=1 where FK_Line_num=12;");
             
         }
-        else if(floor==201 || floor==202)
+        else if(floor.substring(0,1)=="2")
         {
             connection.query("SELECT * FROM  elevator where FK_Line_num=12;",
             function(err, results, filed) {
-            console.log(results[0].Elevator_floor)
-            res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
-                'message': "연결됨",
-                'el_before':results[0].Elevator_floor,
-                'el_after':2
-                });
+
+                el_beforefloor = results[0].Elevator_floor;
+                res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                    'message': "연결됨",
+                    'el_before':el_beforefloor,
+                    'el_after':2,
+                    'el_Call': call
+                    });
             });
+
             connection.query("UPDATE elevator SET Elevator_floor=2 where FK_Line_num=12;");
             
         }
-        else if(floor==301 || floor==302)
+        else if(floor.substring(0,1)=="3")
         {
             connection.query("SELECT * FROM  elevator where FK_Line_num=12;",
             function(err, results, filed) {
-            console.log(results[0].Elevator_floor)
-            res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
-                'message': "연결됨",
-                'el_before':results[0].Elevator_floor,
-                'el_after':3
-                });
+                el_beforefloor = results[0].Elevator_floor;
+                res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                    'message': "연결됨",
+                    'el_before':el_beforefloor,
+                    'el_after':3,
+                    'el_Call': call
+                    });
             });
+
             connection.query("UPDATE elevator SET Elevator_floor=3 where FK_Line_num=12;");
-            
-            
         }
-        floor=0;
+
+
+        floor="0";
+        el_Call=0;
         success="false";
     }
 };
 
+exports.keypad = (req, res) => {
+
+    console.log("===keypad===");
+    console.log(req.query);
+    // if (req.query != "") {
+    //     res.json({
+    //         'message': '연결 테스트 성공?'
+    //     });
+    // }
+    var reqNum = req.query.signal;
+    var callHo = reqNum.substring(1, reqNum.length);
+    console.log(callHo);
+
+    connection.query("SELECT PK_Ho_Code,COUNT(*) AS cnt FROM ho WHERE PK_HO_num='"+callHo+"';",
+        function(err, result) {
+            if(result[0].cnt!=0) {
+                res.json({
+                    'message': 'Call Success'
+                });
+                console.log(result[0].PK_Ho_Code);
+                connection.query("SELECT FK_HO_code,COUNT(*) AS cnt  FROM home WHERE FK_Ho_code='"+result[0].PK_Ho_Code+"';",
+                function(ERR,results,Field){
+                    if(results[0].cnt!=0)
+                    {
+                        CallHost=results[0].FK_HO_code;
+                        openresponse = true;
+                    }
+                });
+                
+                InsertAlarm(callHo,callHo+"호에 문열림 요청");
+            } else {
+                res.json({
+                    'message': 'Call Failure'
+                });
+            }
+            res.end();
+        }
+    );
+
+    // if (req.query != "") {
+    //     res.json({
+    //         'message': '연결 테스트 성공?'
+    //     });
+    // }
+}
+
 exports.mypage = (req, res) => {
     console.log("mypage");
     let res1 = res;
-
     USERID = req.body.userId;
 
     //디비에 SELECT문을 보냄
@@ -286,7 +363,9 @@ exports.mypage = (req, res) => {
                 'userphone':results[0].Home_phonenum,
                 'username': results[0].Home_name
             });
-        });
+    });
+    
+
 };
 
 exports.update = (req, res) => {
@@ -337,22 +416,33 @@ exports.upload = (req, res) => {
     } catch (err) {
         console.dir(err.stack);
     }
-    console.log(req.file);
+    console.log("1"+req.file);
     console.log(req.body);
-    res.redirect("/uploads/"+req.file.filename);
-    console.log(req.file.filename);
 
+    res.redirect("./../face_recognition/knowns/" + req.file.filename);
+    // res.redirect("/uploads/" + req.file.filename);
+    console.log("3"+req.file.filename);
     return res.status(200).end();
 };
 
 exports.uploadfile = (req, res) => {
     var file = req.params.upload;
-    console.log(file);
-    console.log(req.params.upload); //
-    var img = fs.readFileSync(__dirname + "/uploads/" + file);
+    console.log("들어옴");
+    console.log("4"+file);
+    console.log("5"+req.params.upload);
+
+    var filePath = path.join(__dirname, "../face_recognition/knowns/");
+    var img = fs.readFile(filePath + file);
+
+    // var img = fs.readFileSync(__dirname + "/uploads/" + file);
+    // var img = fs.readFile(filePath + file, "utf8", function(err, data) {
+    //     res.writeHead(200, {'Content-Type': 'image/png'});
+    // });
+
     res.writeHead(200, {'Content-Type': 'image/png'});
+    console.log(res);
     res.end(img, 'binary');
-    console.log(__dirname + "/uploads/" + file);
+    
 };
 
 exports.cctvon = (req, res) => {
@@ -374,8 +464,6 @@ exports.pir = (req, res) => {
     var pir_signal = req.body.pir;
     var date = new Date();
     var date_now = date.getTime()/1000;
-
-    var aa
     
     if(pir_signal==true){
         console.log("pir 센서 값 받기 성공");
@@ -395,11 +483,11 @@ exports.pir = (req, res) => {
         PythonShell.run('recognition.py', options, function(err, results) {
             console.log('얼굴 인식 실행 완료');
         
-            console.log(results.length)
+            console.log(results.length);
             console.log(results);
             console.log(results[results.length-1]);
 
-            face_signal = results[results.length-1]
+            face_signal = results[results.length-1];
 
             kill(1, PythonShell.pid);            
 
@@ -442,7 +530,8 @@ exports.face = (req, res) => {
     console.log(req.body.face_id);
 
     success="true";
-    floor = parseInt(req.body.face_id);
+    // floor = parseInt(req.body.face_id);
+    floor = req.body.face_id;
     
     res.end();
 };
@@ -471,8 +560,13 @@ exports.ho_interface = (req, res) => {
     });
 }
 
-exports.test = (req, res) => {
-    
+exports.DoorOpen = (req, res) => {
+    console.log("문열기요청");
+    floor = req.body.ho_num;
+    console.log(floor +"zzzz");
+    success="true";
+    el_Call=0;
+    res.end();
 };
 
 exports.elecall = (req, res) => {
@@ -481,7 +575,7 @@ exports.elecall = (req, res) => {
     var ho_num;
     var line_num;
     userId=req.body.userId;
-
+    el_Call=1;
     connection.query("SELECT * FROM HOME WHERE PK_Home_id='" + userId + "';",
     function(err, results, filed) {
         ho_code=results[0].FK_Ho_code;
@@ -493,13 +587,13 @@ exports.elecall = (req, res) => {
             line_num=result[0].FK_Line_num;
             console.log(ho_num)
             if(ho_num==101||ho_num==102||ho_num==103||ho_num==104){
-                floor=ho_num;
+                floor="100";
                 elecallfloor=1;
             }else if(ho_num==201||ho_num==202||ho_num==203||ho_num==204){
-                floor=ho_num;
+                floor="200";
                 elecallfloor=2;
             }else if(ho_num==301||ho_num==302||ho_num==303||ho_num==304){
-                floor=ho_num;
+                floor="300";
                 elecallfloor=3;
             }
             console.log(elecallfloor)
@@ -524,6 +618,7 @@ exports.eleopen = (req, res) => {
     console.log(userId)
     connection.query("SELECT * FROM HOME WHERE PK_Home_id='" + userId + "';",
     function(err, results, filed) {
+        console.log(results);
         ho_code=results[0].FK_Ho_code;
         sql = "SELECT * FROM HO WHERE PK_Ho_code= '"+ho_code+"';";
         connection.query(sql, 
@@ -533,7 +628,7 @@ exports.eleopen = (req, res) => {
 
             console.log(elecallfloor)
             sql = 'SELECT * FROM Elevator WHERE FK_Line_num=?;';
-            params = [line_num];
+            params ="12";
             connection.query(sql, params, 
                 function(err, Results, filed) {
                     console.log(Results[0].Elevator_floor);
@@ -549,6 +644,64 @@ exports.eleopen = (req, res) => {
 };
 
 
+exports.logcheck = (req, res) => { 
+
+    if(openresponse==true)
+    {
+        hostcode=req.body.hostcode;
+        connection.query("SELECT * FROM HOME WHERE FK_Ho_Code='" + hostcode + "';",
+            function(err, results, filed) {
+                ho_code=results[0].FK_Ho_code;
+                console.log(CallHost);
+                res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                    'hostcode': CallHost,
+                    'openresponse': openresponse,
+    
+                });
+             openresponse=false;
+        });
+        
+    }
+
+}
+
+exports.alarmcheck = (req, res) => { 
+    var sql = "SELECT * FROM ALARM WHERE FK_HO_NUM=?;";
+    connection.query(sql,req.body.ho_num,
+        function(err,results,filed){
+            var message = new Array();
+            var statuscode;
+            var time = new Array();
+            if(results.length==0)
+            {
+                statuscode=false;  
+            }
+            else
+            {
+                for(var i=0;i<results.length;i++)
+                {
+                    
+                    statuscode=true;
+                    time[i] = results[i].Alarm_datetime.toISOString().replace("T", " ").replace(/\..*/, '');
+                    message[i] = results[i].Alarm_content;
+                }
+            }
+            res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                'status': statuscode,
+                'time': time,
+                'message':message
+            });
+
+    });
+
+}
+
+function InsertAlarm(ho_num,message){
+    var sql = "INSERT INTO  `db_muyahome`.`alarm`  (`FK_Ho_num`, `Alarm_datetime`,`Alarm_content`) VALUES(?,?,?);";
+    var date = new Date(+new Date() + 3240 * 10000).toISOString().replace("T", " ").replace(/\..*/, '');
+    params = [ho_num,date,message];
+    connection.query(sql,params);
+}
 
 exports.push = async function (req, res){ 
     //디바이스의 토큰 값 
@@ -572,5 +725,3 @@ exports.push = async function (req, res){
         return res.status(400).json({success : false})
     }); 
 }
-
-   

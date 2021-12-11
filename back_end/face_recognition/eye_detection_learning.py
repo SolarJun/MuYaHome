@@ -16,10 +16,10 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 
 class Eye_Detection():
     def __init__(self):
-        self.x_train = np.load('eye_detection_dataset/x_train.npy').astype(np.float32)
-        self.y_train = np.load('eye_detection_dataset/y_train.npy').astype(np.float32)
-        self.x_val = np.load('eye_detection_dataset/x_val.npy').astype(np.float32)
-        self.y_val = np.load('eye_detection_dataset/y_val.npy').astype(np.float32)
+        self.x_train = np.load('C:/Users/Administrator/Desktop\MuYaHome/back_end/face_recognition/eye_detection_dataset/x_train.npy').astype(np.float32)
+        self.y_train = np.load('C:/Users/Administrator/Desktop\MuYaHome/back_end/face_recognition/eye_detection_dataset/y_train.npy').astype(np.float32)
+        self.x_val = np.load('C:/Users/Administrator/Desktop\MuYaHome/back_end/face_recognition/eye_detection_dataset/x_val.npy').astype(np.float32)
+        self.y_val = np.load('C:/Users/Administrator/Desktop\MuYaHome/back_end/face_recognition/eye_detection_dataset/y_val.npy').astype(np.float32)
 
         # shape : (26, 34, 1) -> 세로:26, 가로:34
         print(self.x_train.shape, self.y_train.shape)
@@ -92,7 +92,7 @@ class Eye_Detection():
     def Model_fit(self):
         start_time = self.start_time
         model = self.model
-        train_generator = self.train_generator
+        train_generator = self.train_Sgenerator
         val_generator = self.val_generator
 
         model.fit_generator(

@@ -1,7 +1,7 @@
 const multer = require('multer');
 
 var storage = multer.diskStorage({
-    destination: './uploads/',
+    destination: '../face_recognition/knowns/',
     filename: function(req, file, cb) {
 		return crypto.pseudoRandomBytes(16, function(err, raw) {
 			if(err) {
@@ -19,6 +19,7 @@ module.exports = (app) => {
     app.post('/user/login', contacts.login); //로그인
     app.post('/user/idcheck', contacts.idcheck); //아이디 중복 체크
     app.post('/user/codecheck',contacts.codecheck);//세대코드 체크
+    app.post('/user/fam', contacts.fam);//가족구성원 수 체크
 
     app.post('/cctv/cctvon',contacts.cctvon);//cctv 1값 체크
 
@@ -36,10 +37,15 @@ module.exports = (app) => {
 
     app.post('/face', contacts.face);
     
-    app.get('/test', contacts.test);
+    app.post('/DoorOpen', contacts.DoorOpen);
 
     app.post('/user/elecall', contacts.elecall);
     app.post('/user/eleopen',contacts.eleopen);
+    app.post('/user/alarmcheck',contacts.alarmcheck);
 
-    app.get('/push', contacts.push);
+    app.get('/arduino/keypad', contacts.keypad);
+
+    app.post('/logcheck', contacts.logcheck);
+
+    app.get("/push", contacts.push);
 }

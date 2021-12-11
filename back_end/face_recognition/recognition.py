@@ -17,17 +17,17 @@ import dlib
 from imutils import face_utils
 from tensorflow.keras.models import load_model
 
-
 class FaceRecog():
     def __init__(self):
         # 스트리밍 영상 가져옴
         self.camera = camera.VideoCamera()
-
+        
         self.known_face_encodings = []
         self.known_face_names = [] 
 
         # 사진 로드 후, 학습
-        dirname = 'C:/Users/Administrator/Desktop/MuYaHome/back_end/face_recognition/knowns'
+        dirname = 'C:/Users/Administrator/Desktop/MuYaHome/back_end/face_recognition/knowns' # All Face Image
+        # dirname = 'C:/Users/Administrator/Desktop/MuYaHome/back_end/face_recognition/knowns_101' # Ex) 101 Face Image
         files = os.listdir(dirname)
         for filename in files:
             name, ext = os.path.splitext(filename)
@@ -87,7 +87,7 @@ class FaceRecog():
                 # 거리가 0.7 이하라면 모르는 얼굴로 설정
                 self.name = "Unknown"
 
-                if min_value < 0.3: # 낮출수록 엄격함
+                if min_value < 0.35: # 낮출수록 엄격함
                     # distances의 최소값을 가진 사람의 이름을 찾음
                     index = np.argmin(distances)
                     # name이 1011 : 101호 1번째, 1012 : 101호 2번째, 2011 : 201호 1번째, ... 이렇게 되어있음
@@ -105,7 +105,7 @@ class FaceRecog():
                 self.face_names.append(self.name)
 
         self.process_this_frame = not self.process_this_frame # True -> Fasle
-
+        
         # 인식한 사람의 얼굴 영역과 이름을 화면에 그림
         for (top, right, bottom, left), name in zip(self.face_locations, self.face_names):
             # 감지한 frame이 위에서 1/4 크기로 조정되었으므로 백업 얼굴 위치를 조정
@@ -229,12 +229,10 @@ class EyeBlinkDetector():
 eye_blink_detector = EyeBlinkDetector()
 
 face_recog = FaceRecog() # 얼굴인식 클래스
-print(face_recog.known_face_names)
-
 
 while True:
     new_time = round(time.time(), 3)
-    
+
     # 120초 안에 얼굴인식이 되지 않으면 카메라 끄기
     if ((new_time-face_recog.start_time) > 120):
         # pir 센서 서버에 얼굴인식이 되지 않았다는 값 보내기
