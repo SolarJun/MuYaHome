@@ -21,30 +21,30 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 int analogPin = 0;
 int val = 0;
 
-int Key1 = 950; // 1
+int Key1 = 940; // 1
 int Key1Sub = 1025;
 int Key2 = 880; // 2
-int Key2Sub = 945;
+int Key2Sub = 940;
 int Key3 = 835; // 3
 int Key3Sub = 880;
-int Key4 = 800; //4
+int Key4 = 795; //4
 int Key4Sub = 835;
-int Key5 = 770; // 5
-int Key5Sub = 800;
-int Key6 = 745; // 6
-int Key6Sub = 770;
+int Key5 = 765; // 5
+int Key5Sub = 795;
+int Key6 = 740; // 6
+int Key6Sub = 765;
 int Key7 = 720; // 7
-int Key7Sub = 745;
-int Key8 = 705; // 8
+int Key7Sub = 740;
+int Key8 = 700; // 8
 int Key8Sub = 720;
-int Key9 = 690; // 9
-int Key9Sub = 705;
-int Key0 = 665; // 0
-int Key0Sub = 675;
-int KeyStar = 675; // *
-int KeyStarSub = 690;
-int KeySharp = 650; // #
-int KeySharpSub = 665;
+int Key9 = 685; // 9
+int Key9Sub = 700;
+int Key0 = 655; // 0
+int Key0Sub = 665;
+int KeyStar = 665; // *
+int KeyStarSub = 685;
+int KeySharp = 645; // #
+int KeySharpSub = 655;
 
 String hoNum; // ex) 104호:0104, 1503호:1503
 
