@@ -45,7 +45,13 @@ module.exports = (app) => {
 
     app.get('/arduino/keypad', contacts.keypad);
 
+<<<<<<< Updated upstream
     app.post('/logcheck', contacts.logcheck);
 
     app.get("/push", contacts.push);
+=======
+    app.get('/push', contacts.push);
+
+    app.post('/logcheck', contacts.logcheck);
+>>>>>>> Stashed changes
 }

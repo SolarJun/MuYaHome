@@ -10,17 +10,27 @@ crypto = require('crypto');
 
 var floor = "0";
 var success="false";
+<<<<<<< Updated upstream
 var el_Call = 0;
 var openresponse = false;
 var CallHost;
+=======
+
+var openresponse = false;
+
+
+>>>>>>> Stashed changes
 
 
 /////////////////////////////pushAlarm///////////////// 
 const admin = require("firebase-admin"); 
 let serviceAccount = require("./firebase-admin.json"); 
 const { Console } = require('console');
+<<<<<<< Updated upstream
 const internal = require('stream');
 const { addAbortSignal } = require('stream');
+=======
+>>>>>>> Stashed changes
 admin.initializeApp({ 
     credential: admin.credential.cert(serviceAccount), 
 }); 
@@ -103,6 +113,29 @@ exports.login = (req, res) => { //로그인 요청 시
     console.log('로그인');
     let res1 = res;
     
+<<<<<<< Updated upstream
+=======
+ /*let deviceToken = `ddLrVeDlQpSjzqqqOoR8Jb:APA91bGuogihPK0vz3biMNZL2oLykvsEgunOws5S28m4auPhv3iKnKuFxTz3MxXtCBItFZP3vzlIy8OWUataA7qf_J0vGMiyTSr2pJrtb8lInHuWDjOc1k4kb_72nrTChUD0BUUhMaDj`
+    let message1 = {
+        notification: {
+            title: '성공',
+            body: '로그인성공',
+        },
+        token: deviceToken,
+    }
+    console.log('message success');
+    admin
+    .messaging()
+    .send(message1)
+    .then((response) => {
+        console.log('Successfully sent message: : ', response)
+        return res1.status(200).json({ success: true })
+    })
+    .catch((err) => {
+        console.log('Error Sending message!!! : ', err)
+        return res1.status(400).json({ success: false })
+    })*/
+>>>>>>> Stashed changes
     USERID = req.body.userId; //로그인을 할때 보냄 id값이 저장
     //디비에 SELECT문을 보냄
     console.log(req.body.userId, req.body.userPw);
@@ -112,11 +145,16 @@ exports.login = (req, res) => { //로그인 요청 시
             var resultCode = 404;
             var message = '에러가 발생했습니다';
             var hostcode;
+<<<<<<< Updated upstream
+=======
+            console.log('456');
+>>>>>>> Stashed changes
             if (results[0] != null) { //로그인을 할려고 한 데이터가 존재하면 검색한 결과가  NULL이 아니기 때문에 로그인 가능
                 console.log("로그인 성공")
                 resultCode = 200;
                 message = "로그인성공"
                 hostcode = results[0].FK_Ho_code;
+<<<<<<< Updated upstream
                 connection.query("SELECT PK_Ho_num FROM db_muyahome.ho WHERE PK_HO_Code=?;",hostcode,
                 function(error,result,flieds){
                     console.log(hostcode);
@@ -129,12 +167,20 @@ exports.login = (req, res) => { //로그인 요청 시
                         'ho_num':result[0].PK_Ho_num,
                     });
                 });
+=======
+                console.log(hostcode);
+
+                        
+
+
+>>>>>>> Stashed changes
             } else {
                 { //로그인을 할려고 한 데이터가 존재하면 존재하지않으면  NULL이기 때문에 로그인 불가능가능
                     console.log("로그인 실패")
                     resultCode = 204;
                     message = "아이디와 비밀번호가 일치하지 않습니다."
 
+<<<<<<< Updated upstream
                 }
                 res1.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
                     'code': resultCode,
@@ -146,6 +192,39 @@ exports.login = (req, res) => { //로그인 요청 시
             }
 
 
+=======
+                   /* let deviceToken = `cLrmPXJmQsGjDghBwy0Acr:APA91bGcZ5mBeoEqop9oLKXfU16uTv_QiW_uCUo9XVev5Tb6Bz1rrTbcabbrIk03HvV5FZqJmm5Gdf1VUq9ElmEGfB2mVNxcK-JiZFJ48oa0SLonaXQOgG8dJyKHiXKDZ71h69BdvSGr`
+                    let message1 = {
+                        notification: {
+                            title: '실패',
+                            body: '아이디와 비밀번호가 일치하지 않습니다.',
+                        },
+                        token: deviceToken,
+                    }
+                    console.log('message success');
+                    admin
+                        .messaging()
+                        .send(message1)
+                        .then((response) => {
+                            console.log('Successfully sent message: : ', response)
+                            return res1.status(200).json({ success: true })
+                        })
+                        .catch((err) => {
+                            console.log('Error Sending message!!! : ', err)
+                            return res1.status(400).json({ success: false })
+                        });*/
+
+                }
+                
+
+            }
+            res1.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                'code': resultCode,
+                'message': message,
+                'userid': USERID,
+                'hostcode':hostcode,
+            });
+>>>>>>> Stashed changes
             
         });
 
@@ -226,8 +305,13 @@ exports.codecheck = (req, res) => { //코드 중복요청시
 };
 
 exports.callelevator12 = (req,res) => {
+<<<<<<< Updated upstream
     var el_beforefloor;
     var call = el_Call;
+=======
+    console.log("엘베"+success);
+    console.log("엘베"+floor);
+>>>>>>> Stashed changes
     if(success=="false")
     {
         res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
@@ -235,6 +319,7 @@ exports.callelevator12 = (req,res) => {
         });
     }
     else if(success=="true"){
+<<<<<<< Updated upstream
         console.log("엘리베이터 호출");
         if(floor.substring(0,1)=="1")
         {
@@ -251,6 +336,24 @@ exports.callelevator12 = (req,res) => {
 
             });
 
+=======
+        console.log("엘리베이터 호출")
+        console.log(floor.substring(0,1));
+        if(floor.substring(0,1)=="1")
+        {
+            
+            connection.query("SELECT * FROM  elevator where FK_Line_num=12;",
+            function(err, results, filed) {
+            console.log(results[0].Elevator_floor)
+            
+            res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                'message': "연결됨",
+                'el_before':results[0].Elevator_floor,
+                'el_after':1
+                });
+            });
+            
+>>>>>>> Stashed changes
             connection.query("UPDATE elevator SET Elevator_floor=1 where FK_Line_num=12;");
             
         }
@@ -285,11 +388,17 @@ exports.callelevator12 = (req,res) => {
             });
 
             connection.query("UPDATE elevator SET Elevator_floor=3 where FK_Line_num=12;");
+<<<<<<< Updated upstream
         }
 
 
         floor="0";
         el_Call=0;
+=======
+            
+        }
+        floor="0";
+>>>>>>> Stashed changes
         success="false";
     }
 };
@@ -307,12 +416,17 @@ exports.keypad = (req, res) => {
     var callHo = reqNum.substring(1, reqNum.length);
     console.log(callHo);
 
+<<<<<<< Updated upstream
     connection.query("SELECT PK_Ho_Code,COUNT(*) AS cnt FROM ho WHERE PK_HO_num='"+callHo+"';",
+=======
+    connection.query("SELECT COUNT(*) AS cnt FROM ho WHERE PK_HO_num='"+callHo+"';",
+>>>>>>> Stashed changes
         function(err, result) {
             if(result[0].cnt!=0) {
                 res.json({
                     'message': 'Call Success'
                 });
+<<<<<<< Updated upstream
                 console.log(result[0].PK_Ho_Code);
                 connection.query("SELECT FK_HO_code,COUNT(*) AS cnt  FROM home WHERE FK_Ho_code='"+result[0].PK_Ho_Code+"';",
                 function(ERR,results,Field){
@@ -324,6 +438,9 @@ exports.keypad = (req, res) => {
                 });
                 
                 InsertAlarm(callHo,callHo+"호에 문열림 요청");
+=======
+                openresponse = true;
+>>>>>>> Stashed changes
             } else {
                 res.json({
                     'message': 'Call Failure'
@@ -343,6 +460,14 @@ exports.keypad = (req, res) => {
 exports.mypage = (req, res) => {
     console.log("mypage");
     let res1 = res;
+<<<<<<< Updated upstream
+=======
+
+   
+        
+    
+
+>>>>>>> Stashed changes
     USERID = req.body.userId;
 
     //디비에 SELECT문을 보냄
@@ -563,9 +688,14 @@ exports.ho_interface = (req, res) => {
 exports.DoorOpen = (req, res) => {
     console.log("문열기요청");
     floor = req.body.ho_num;
+<<<<<<< Updated upstream
     console.log(floor +"zzzz");
     success="true";
     el_Call=0;
+=======
+    
+    success="true";
+>>>>>>> Stashed changes
     res.end();
 };
 
@@ -644,6 +774,7 @@ exports.eleopen = (req, res) => {
 };
 
 
+<<<<<<< Updated upstream
 exports.logcheck = (req, res) => { 
 
     if(openresponse==true)
@@ -704,8 +835,11 @@ function InsertAlarm(ho_num,message){
 }
 
 exports.push = async function (req, res){ 
+=======
+exports.push = (req, res) => { 
+>>>>>>> Stashed changes
     //디바이스의 토큰 값 
-    let deviceToken =`euGXDgeWQr692pptG_J8FY:APA91bGZ8WV2T7rjbQzuAwSwZBDtBn9rSjA4vL5JM1Rvm2p1przM6aYqnxCVQITlyT4di96QC23TbqNIrpkcvHxAiBsxSnhl1fZtZy-0QwlItrVIZIgY53KMt9aYAlukOA8eyhId0FEm` 
+    let deviceToken =`ddLrVeDlQpSjzqqqOoR8Jb:APA91bGuogihPK0vz3biMNZL2oLykvsEgunOws5S28m4auPhv3iKnKuFxTz3MxXtCBItFZP3vzlIy8OWUataA7qf_J0vGMiyTSr2pJrtb8lInHuWDjOc1k4kb_72nrTChUD0BUUhMaDj` 
     let message = { 
         notification: { 
             title: '123', 
@@ -713,6 +847,7 @@ exports.push = async function (req, res){
         }, 
         token: deviceToken, 
     } 
+    console.log('111');
     admin 
     .messaging() 
     .send(message) 
@@ -724,4 +859,30 @@ exports.push = async function (req, res){
         console.log('Error Sending message!!! : ', err)
         return res.status(400).json({success : false})
     }); 
+<<<<<<< Updated upstream
 }
+=======
+}
+
+exports.logcheck = (req, res) => { 
+
+    if(openresponse==true)
+    {
+        console.log(req);
+        hostcode=req.body.hostcode;
+        console.log(hostcode);
+        connection.query("SELECT * FROM HOME WHERE FK_Ho_Code='" + hostcode + "';",
+        function(err, results, filed) {
+            ho_code=results[0].FK_Ho_code;
+            res.json({ //APP에다가 JSON 형식으로 리스폰을 보냄
+                'hostcode': ho_code,
+                'openresponse': openresponse,
+    
+             });
+             openresponse=false;
+        });
+        
+    }
+
+}
+>>>>>>> Stashed changes
